@@ -13,6 +13,7 @@ on:
       - '[0-9].[0-9]+'
   schedule:
     - cron:  '0 6 * * *'  # Daily 6AM UTC build
+  workflow_dispatch: # Manual trigger
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
@@ -155,10 +156,10 @@ jobs:
             no-extensions: 'Y'
             os: ubuntu
             experimental: false
-          # - os: ubuntu
-          #   pyver: "3.14"
-          #   experimental: true
-          #   no-extensions: 'Y'
+          - os: ubuntu
+            pyver: "3.14"
+            experimental: true
+            no-extensions: 'Y'
       fail-fast: true
     runs-on: ${{ matrix.os }}-latest
     continue-on-error: ${{ matrix.experimental }}
