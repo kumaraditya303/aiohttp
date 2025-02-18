@@ -1,3 +1,5 @@
+#cython: freethreading_compatible=True
+
 """Reader for WebSocket protocol versions 13 and 8."""
 
 import asyncio
