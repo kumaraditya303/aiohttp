@@ -1,5 +1,7 @@
 # HTTP client functional tests against aiohttp.web server
 
+from __future__ import annotations
+
 import asyncio
 import datetime
 import http.cookies
@@ -27,7 +29,6 @@ from typing import (
 from unittest import mock
 
 import pytest
-import trustme
 from multidict import MultiDict
 from pytest_mock import MockerFixture
 from yarl import URL

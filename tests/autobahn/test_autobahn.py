@@ -6,7 +6,11 @@ from typing import Any, Dict, Generator, List
 
 import pytest
 from pytest import TempPathFactory
-from python_on_whales import DockerException, docker
+
+try:
+    from python_on_whales import DockerException, docker
+except ModuleNotFoundError:
+    pytestmark = pytest.mark.skip()
 
 
 @pytest.fixture(scope="session")
