@@ -1,0 +1,20 @@
+on:
+    push:
+
+jobs:
+    build:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          python-version: [3.14-dev]
+      name: main
+      steps:
+        - uses: actions/checkout@v2
+        - uses: deadsnakes/action@v3.2.0
+          with:
+            python-version: ${{ matrix.python-version }}
+            nogil: true
+        - run: python --version
+        - run: python -m pip install --upgrade pip
+        - run: chmod +x build.sh
+        - run: ./build.sh
