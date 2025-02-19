@@ -19,3 +19,4 @@ jobs:
         - run: python -m pip install --upgrade pip
         - run: chmod +x build.sh
         - run: ./build.sh
+        - run: pytest -vv
