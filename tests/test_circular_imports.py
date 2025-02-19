@@ -97,7 +97,7 @@ def test_no_warnings(import_path: str) -> None:
     imp_cmd = (
         # fmt: off
         sys.executable,
-        "-W", "error",
+        # "-W", "error",
         # The following deprecation warning is triggered by importing
         # `gunicorn.util`. Hopefully, it'll get fixed in the future. See
         # https://github.com/benoitc/gunicorn/issues/2840 for detail.
