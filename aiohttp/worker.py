@@ -7,6 +7,7 @@ import signal
 import sys
 from types import FrameType
 from typing import TYPE_CHECKING, Any, Optional
+import inspect
 
 from gunicorn.config import AccessLogFormat as GunicornAccessLogFormat
 from gunicorn.workers import base
@@ -68,7 +69,7 @@ class GunicornWebWorker(base.Worker):  # type: ignore[misc,no-any-unimported]
         runner = None
         if isinstance(self.wsgi, Application):
             app = self.wsgi
-        elif asyncio.iscoroutinefunction(self.wsgi):
+        elif inspect.iscoroutinefunction(self.wsgi):
             wsgi = await self.wsgi()
             if isinstance(wsgi, web.AppRunner):
                 runner = wsgi
