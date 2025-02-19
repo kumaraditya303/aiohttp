@@ -7,7 +7,7 @@ jobs:
       runs-on: ubuntu-latest
       strategy:
         matrix:
-          python-version: [3.14-dev]
+          python-version: [3.13-dev, 3.14-dev]
       name: main
       steps:
         - uses: actions/checkout@v2
@@ -19,4 +19,4 @@ jobs:
         - run: python -m pip install --upgrade pip
         - run: chmod +x build.sh
         - run: ./build.sh
-        - run: pytest -vv
+        - run: pytest --cov-append -s -v --numprocesses=0
