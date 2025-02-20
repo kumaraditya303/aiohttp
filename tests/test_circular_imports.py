@@ -26,8 +26,6 @@ if TYPE_CHECKING:
 
 import aiohttp
 
-pytestmark = pytest.mark.skip()
-
 def _mark_aiohttp_worker_for_skipping(
     importables: List[str],
 ) -> List[Union[str, "ParameterSet"]]:
