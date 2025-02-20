@@ -1,6 +1,9 @@
 on:
     push:
     workflow_dispatch:
+    schedule:
+      # Run this daily at 2400 UTC
+      - cron: '0 0 * * *'
 
 jobs:
     regular:
@@ -27,7 +30,7 @@ jobs:
       runs-on: macos-latest
       strategy:
         matrix:
-          python-version: [3.13, 3.14-dev, 3.14t-dev]
+          python-version: [3.13t-dev, 3.14t-dev]
       name: tsan
       steps:
         - uses: actions/checkout@v2
