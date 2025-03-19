@@ -24,7 +24,7 @@ from email.utils import parsedate
 from http.cookies import SimpleCookie
 from math import ceil
 from pathlib import Path
-from types import TracebackType
+from types import MappingProxyType, TracebackType
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -145,7 +145,7 @@ class BasicAuth(namedtuple("BasicAuth", ["login", "password", "encoding"])):
         return super().__new__(cls, login, password, encoding)
 
     @classmethod
-    def decode(cls, auth_header: str, encoding: str = "latin1") -> "BasicAuth":
+    def decode(cls, auth_header: str, encoding: str = "latin1") -> "BasicAuth":  # type: ignore[misc]
         """Create a BasicAuth object from an Authorization HTTP header."""
         try:
             auth_type, encoded_credentials = auth_header.split(" ", 1)
@@ -174,7 +174,7 @@ class BasicAuth(namedtuple("BasicAuth", ["login", "password", "encoding"])):
         return cls(username, password, encoding=encoding)
 
     @classmethod
-    def from_url(cls, url: URL, *, encoding: str = "latin1") -> Optional["BasicAuth"]:
+    def from_url(cls, url: URL, *, encoding: str = "latin1") -> Optional["BasicAuth"]:  # type: ignore[misc]
         """Create BasicAuth from url."""
         if not isinstance(url, URL):
             raise TypeError("url should be yarl.URL instance")
@@ -245,7 +245,7 @@ def netrc_from_env() -> Optional[netrc.netrc]:
 
 
 @frozen_dataclass_decorator
-class ProxyInfo:
+class ProxyInfo:  # type: ignore[misc]
     proxy: URL
     proxy_auth: Optional[BasicAuth]
 
@@ -365,6 +365,20 @@ def parse_mimetype(mimetype: str) -> MimeType:
     return MimeType(
         type=mtype, subtype=stype, suffix=suffix, parameters=MultiDictProxy(params)
     )
+
+
+@functools.lru_cache(maxsize=56)
+def parse_content_type(raw: str) -> Tuple[str, MappingProxyType[str, str]]:
+    """Parse Content-Type header.
+
+    Returns a tuple of the parsed content type and a
+    MappingProxyType of parameters.
+    """
+    msg = HeaderParser().parsestr(f"Content-Type: {raw}")
+    content_type = msg.get_content_type()
+    params = msg.get_params(())
+    content_dict = dict(params[1:])  # First element is content type again
+    return content_type, MappingProxyType(content_dict)
 
 
 def guess_filename(obj: Any, default: Optional[str] = None) -> Optional[str]:
@@ -733,10 +747,10 @@ class HeadersMixin:
             self._content_type = "application/octet-stream"
             self._content_dict = {}
         else:
-            msg = HeaderParser().parsestr("Content-Type: " + raw)
-            self._content_type = msg.get_content_type()
-            params = msg.get_params(())
-            self._content_dict = dict(params[1:])  # First element is content type again
+            content_type, content_mapping_proxy = parse_content_type(raw)
+            self._content_type = content_type
+            # _content_dict needs to be mutable so we can update it
+            self._content_dict = content_mapping_proxy.copy()
 
     @property
     def content_type(self) -> str:
@@ -870,7 +884,7 @@ class ChainMapProxy(Mapping[Union[str, AppKey[Any]], Any]):
     def __getitem__(self, key: AppKey[_T]) -> _T: ...
 
     @overload
-    def __getitem__(self, key: str) -> Any: ...
+    def __getitem__(self, key: str) -> Any: ...  # type: ignore[misc]
 
     def __getitem__(self, key: Union[str, AppKey[_T]]) -> Any:
         for mapping in self._maps:
@@ -887,7 +901,7 @@ class ChainMapProxy(Mapping[Union[str, AppKey[Any]], Any]):
     def get(self, key: AppKey[_T], default: None = ...) -> Optional[_T]: ...
 
     @overload
-    def get(self, key: str, default: Any = ...) -> Any: ...
+    def get(self, key: str, default: Any = ...) -> Any: ...  # type: ignore[misc]
 
     def get(self, key: Union[str, AppKey[_T]], default: Any = None) -> Any:
         try:

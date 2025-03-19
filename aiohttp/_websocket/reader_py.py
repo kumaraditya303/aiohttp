@@ -98,6 +98,7 @@ class WebSocketDataQueue:
     def feed_eof(self) -> None:
         self._eof = True
         self._release_waiter()
+        self._exception = None  # Break cyclic references
 
     def feed_data(self, data: "WSMessage") -> None:
         size = data.size
@@ -311,11 +312,11 @@ class WebSocketReader:
                 self.queue.feed_data(msg)
             elif opcode == OP_CODE_PING:
                 self.queue.feed_data(
-                    WSMessagePing(data=payload, size=len(payload), extra="")
+                    WSMessagePing(data=bytes(payload), size=len(payload), extra="")
                 )
             elif opcode == OP_CODE_PONG:
                 self.queue.feed_data(
-                    WSMessagePong(data=payload, size=len(payload), extra="")
+                    WSMessagePong(data=bytes(payload), size=len(payload), extra="")
                 )
             else:
                 raise WebSocketError(

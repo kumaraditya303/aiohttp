@@ -81,7 +81,7 @@ class AbstractMatchInfo(ABC):
         """HTTPException instance raised on router's resolving, or None"""
 
     @abstractmethod  # pragma: no branch
-    def get_info(self) -> Dict[str, Any]:
+    def get_info(self) -> Dict[str, Any]:  # type: ignore[misc]
         """Return a dict with additional info useful for introspection"""
 
     @property  # pragma: no branch
@@ -120,7 +120,7 @@ class AbstractView(ABC):
         return self._request
 
     @abstractmethod
-    def __await__(self) -> Generator[Any, None, StreamResponse]:
+    def __await__(self) -> Generator[None, None, StreamResponse]:
         """Execute the view handler."""
 
 
@@ -202,7 +202,9 @@ class AbstractStreamWriter(ABC):
     length: Optional[int] = 0
 
     @abstractmethod
-    async def write(self, chunk: Union[bytes, bytearray, memoryview]) -> None:
+    async def write(
+        self, chunk: Union[bytes, bytearray, "memoryview[int]", "memoryview[bytes]"]
+    ) -> None:
         """Write chunk into stream."""
 
     @abstractmethod

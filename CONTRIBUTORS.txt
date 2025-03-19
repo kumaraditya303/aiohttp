@@ -31,6 +31,7 @@ Alexandru Mihai
 Alexey Firsov
 Alexey Nikitin
 Alexey Popravka
+Alexey Stavrov
 Alexey Stepanov
 Almaz Salakhov
 Amin Etesamian
@@ -43,6 +44,7 @@ Andrej Antonov
 Andrew Leech
 Andrew Lytvyn
 Andrew Svetlov
+Andrew Top
 Andrew Zhou
 Andrii Soldatenko
 Anes Abismail
@@ -82,6 +84,7 @@ Chris AtLee
 Chris Laws
 Chris Moore
 Chris Shucksmith
+Christophe Bornet
 Christopher Schmitt
 Claudiu Popa
 Colin Dunklau
@@ -339,6 +342,7 @@ Thanos Lefteris
 Thijs Vermeir
 Thomas Forbes
 Thomas Grainger
+Tim Menninger
 Tolga Tezel
 Tomasz Trebski
 Toshiaki Tanaka

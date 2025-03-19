@@ -26,7 +26,6 @@ from typing import (
 from unittest import mock
 
 import pytest
-from aiohappyeyeballs import AddrInfoType
 from pytest_mock import MockerFixture
 from yarl import URL
 
@@ -44,6 +43,7 @@ from aiohttp.client_reqrep import ConnectionKey
 from aiohttp.connector import (
     _SSL_CONTEXT_UNVERIFIED,
     _SSL_CONTEXT_VERIFIED,
+    AddrInfoType,
     Connection,
     TCPConnector,
     _DNSCacheTable,
@@ -53,26 +53,26 @@ from aiohttp.test_utils import make_mocked_coro, unused_port
 from aiohttp.tracing import Trace
 
 
-@pytest.fixture()
-def key() -> ConnectionKey:
+@pytest.fixture
+def key() -> ConnectionKey:  # type: ignore[misc]
     # Connection key
     return ConnectionKey("localhost", 80, False, True, None, None, None)
 
 
 @pytest.fixture
-def key2() -> ConnectionKey:
+def key2() -> ConnectionKey:  # type: ignore[misc]
     # Connection key
     return ConnectionKey("localhost", 80, False, True, None, None, None)
 
 
 @pytest.fixture
-def other_host_key2() -> ConnectionKey:
+def other_host_key2() -> ConnectionKey:  # type: ignore[misc]
     # Connection key
     return ConnectionKey("otherhost", 80, False, True, None, None, None)
 
 
 @pytest.fixture
-def ssl_key() -> ConnectionKey:
+def ssl_key() -> ConnectionKey:  # type: ignore[misc]
     # Connection key
     return ConnectionKey("localhost", 80, True, True, None, None, None)
 
@@ -221,7 +221,7 @@ async def test_del(loop: asyncio.AbstractEventLoop, key: ConnectionKey) -> None:
 
 
 @pytest.mark.xfail
-async def test_del_with_scheduled_cleanup(
+async def test_del_with_scheduled_cleanup(  # type: ignore[misc]
     loop: asyncio.AbstractEventLoop, key: ConnectionKey
 ) -> None:
     loop.set_debug(True)
@@ -251,7 +251,7 @@ async def test_del_with_scheduled_cleanup(
 @pytest.mark.skipif(
     sys.implementation.name != "cpython", reason="CPython GC is required for the test"
 )
-def test_del_with_closed_loop(
+def test_del_with_closed_loop(  # type: ignore[misc]
     loop: asyncio.AbstractEventLoop, key: ConnectionKey
 ) -> None:
     async def make_conn() -> aiohttp.BaseConnector:
@@ -444,7 +444,7 @@ async def test_release(loop: asyncio.AbstractEventLoop, key: ConnectionKey) -> N
 
 
 @pytest.mark.usefixtures("enable_cleanup_closed")
-async def test_release_ssl_transport(
+async def test_release_ssl_transport(  # type: ignore[misc]
     loop: asyncio.AbstractEventLoop, ssl_key: ConnectionKey
 ) -> None:
     conn = aiohttp.BaseConnector(enable_cleanup_closed=True)
@@ -642,6 +642,56 @@ async def test_tcp_connector_certificate_error(
         assert isinstance(ctx.value, ssl.CertificateError)
         assert isinstance(ctx.value.certificate_error, ssl.CertificateError)
         assert isinstance(ctx.value, aiohttp.ClientSSLError)
+
+    await conn.close()
+
+
+async def test_tcp_connector_closes_socket_on_error(
+    loop: asyncio.AbstractEventLoop, start_connection: mock.AsyncMock
+) -> None:
+    req = ClientRequest("GET", URL("https://127.0.0.1:443"), loop=loop)
+
+    conn = aiohttp.TCPConnector()
+    with (
+        mock.patch.object(
+            conn._loop,
+            "create_connection",
+            autospec=True,
+            spec_set=True,
+            side_effect=ValueError,
+        ),
+        pytest.raises(ValueError),
+    ):
+        await conn.connect(req, [], ClientTimeout())
+
+    assert start_connection.return_value.close.called
+
+    await conn.close()
+
+
+async def test_tcp_connector_closes_socket_on_error_results_in_another_error(
+    loop: asyncio.AbstractEventLoop, start_connection: mock.AsyncMock
+) -> None:
+    """Test that when error occurs while closing the socket."""
+    req = ClientRequest("GET", URL("https://127.0.0.1:443"), loop=loop)
+    start_connection.return_value.close.side_effect = OSError(
+        1, "error from closing socket"
+    )
+
+    conn = aiohttp.TCPConnector()
+    with (
+        mock.patch.object(
+            conn._loop,
+            "create_connection",
+            autospec=True,
+            spec_set=True,
+            side_effect=ValueError,
+        ),
+        pytest.raises(aiohttp.ClientConnectionError, match="error from closing socket"),
+    ):
+        await conn.connect(req, [], ClientTimeout())
+
+    assert start_connection.return_value.close.called
 
     await conn.close()
 
@@ -1924,7 +1974,7 @@ async def test_cleanup(key: ConnectionKey) -> None:
 
 
 @pytest.mark.usefixtures("enable_cleanup_closed")
-async def test_cleanup_close_ssl_transport(
+async def test_cleanup_close_ssl_transport(  # type: ignore[misc]
     loop: asyncio.AbstractEventLoop, ssl_key: ConnectionKey
 ) -> None:
     proto = create_mocked_conn(loop)
@@ -3660,6 +3710,61 @@ async def test_connector_throttle_trace_race(loop: asyncio.AbstractEventLoop) ->
     await connector.close()
 
 
+async def test_connector_resolve_in_case_of_trace_cache_miss_exception(
+    loop: asyncio.AbstractEventLoop,
+) -> None:
+    token: ResolveResult = {
+        "hostname": "localhost",
+        "host": "127.0.0.1",
+        "port": 80,
+        "family": socket.AF_INET,
+        "proto": 0,
+        "flags": socket.AI_NUMERICHOST,
+    }
+
+    request_count = 0
+
+    class DummyTracer(Trace):
+        def __init__(self) -> None:
+            """Dummy"""
+
+        async def send_dns_cache_hit(self, *args: object, **kwargs: object) -> None:
+            """Dummy send_dns_cache_hit"""
+
+        async def send_dns_resolvehost_start(
+            self, *args: object, **kwargs: object
+        ) -> None:
+            """Dummy send_dns_resolvehost_start"""
+
+        async def send_dns_resolvehost_end(
+            self, *args: object, **kwargs: object
+        ) -> None:
+            """Dummy send_dns_resolvehost_end"""
+
+        async def send_dns_cache_miss(self, *args: object, **kwargs: object) -> None:
+            nonlocal request_count
+            request_count += 1
+            if request_count <= 1:
+                raise Exception("first attempt")
+
+    async def resolve_response() -> List[ResolveResult]:
+        await asyncio.sleep(0)
+        return [token]
+
+    with mock.patch("aiohttp.connector.DefaultResolver") as m_resolver:
+        m_resolver().resolve.return_value = resolve_response()
+
+        connector = TCPConnector()
+        traces = [DummyTracer()]
+
+        with pytest.raises(Exception):
+            await connector._resolve_host("", 0, traces)
+
+        await connector._resolve_host("", 0, traces) == [token]
+
+    await connector.close()
+
+
 async def test_connector_does_not_remove_needed_waiters(
     loop: asyncio.AbstractEventLoop, key: ConnectionKey
 ) -> None:
@@ -3744,6 +3849,50 @@ def test_connector_multiple_event_loop() -> None:
     assert raw_response_list == [True, True]
 
 
+async def test_tcp_connector_socket_factory(
+    loop: asyncio.AbstractEventLoop, start_connection: mock.AsyncMock
+) -> None:
+    """Check that socket factory is called"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        start_connection.return_value = s
+
+        local_addr = None
+        socket_factory: Callable[[AddrInfoType], socket.socket] = lambda _: s
+        happy_eyeballs_delay = 0.123
+        interleave = 3
+        conn = aiohttp.TCPConnector(
+            interleave=interleave,
+            local_addr=local_addr,
+            happy_eyeballs_delay=happy_eyeballs_delay,
+            socket_factory=socket_factory,
+        )
+
+        with mock.patch.object(
+            conn._loop,
+            "create_connection",
+            autospec=True,
+            spec_set=True,
+            return_value=(mock.Mock(), mock.Mock()),
+        ):
+            host = "127.0.0.1"
+            port = 443
+            req = ClientRequest("GET", URL(f"https://{host}:{port}"), loop=loop)
+            with closing(await conn.connect(req, [], ClientTimeout())):
+                pass
+            await conn.close()
+
+    start_connection.assert_called_with(
+        addr_infos=[
+            (socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "", (host, port))
+        ],
+        local_addr_infos=local_addr,
+        happy_eyeballs_delay=happy_eyeballs_delay,
+        interleave=interleave,
+        loop=loop,
+        socket_factory=socket_factory,
+    )
+
+
 def test_default_ssl_context_creation_without_ssl() -> None:
     """Verify _make_ssl_context does not raise when ssl is not available."""
     with mock.patch.object(connector_module, "ssl", None):
@@ -3788,7 +3937,7 @@ async def test_available_connections_with_limit_per_host(
 
 
 @pytest.mark.parametrize("limit_per_host", [0, 10])
-async def test_available_connections_without_limit_per_host(
+async def test_available_connections_without_limit_per_host(  # type: ignore[misc]
     key: ConnectionKey, other_host_key2: ConnectionKey, limit_per_host: int
 ) -> None:
     """Verify expected values based on active connections with higher host limit."""
