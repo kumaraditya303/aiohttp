@@ -62,5 +62,5 @@ jobs:
         - run: python -m pip install --upgrade pip
         - run: chmod +x build.sh
         - run: ./build.sh
-        - run: python -m pytest --cov-append -s -v
+        - run: TSAN_OPTIONS=halt_on_error=1 python -m pytest --cov-append -s -v
 
