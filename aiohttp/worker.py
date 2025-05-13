@@ -239,9 +239,7 @@ class GunicornUVLoopWebWorker(GunicornWebWorker):
     def init_process(self) -> None:
         import uvloop
 
-        # Setup uvloop policy, so that every
-        # asyncio.get_event_loop() will create an instance
-        # of uvloop event loop.
-        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        self.loop = uvloop.new_event_loop()
+        asyncio.set_event_loop(self.loop)
 
-        super().init_process()
+        base.Worker.init_process(self)
