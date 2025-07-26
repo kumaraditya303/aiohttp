@@ -17,7 +17,7 @@ make
 popd
 
 # Generate Cython extension modules
-make cythonize-nodeps
+make cythonize
 
 python -m pip install -e.
 
