@@ -8,7 +8,7 @@ python -m pip install --no-build-isolation git+https://github.com/aio-libs/multi
 python -m pip install --no-build-isolation git+https://github.com/lysnikolaou/frozenlist@free-threading
 python -m pip install --no-build-isolation git+https://github.com/lysnikolaou/propcache@freethreading-support
 python -m pip install --no-build-isolation git+https://github.com/lysnikolaou/yarl@free-threading-support
-python -m pip install aiohappyeyeballs aiosignal
+python -m pip install aiohappyeyeballs aiosignal blockbuster
 
 # Build llhttp
 pushd vendor/llhttp/

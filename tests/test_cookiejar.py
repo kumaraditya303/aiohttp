@@ -3,6 +3,7 @@ import heapq
 import itertools
 import logging
 import pickle
+import sys
 from http.cookies import BaseCookie, Morsel, SimpleCookie
 from operator import not_
 from pathlib import Path
@@ -1013,7 +1014,7 @@ async def test_cookie_jar_clear_domain() -> None:
     with pytest.raises(StopIteration):
         next(iterator)
 
-
+@pytest.mark.skipif(sys.version_info >= (3, 14), reason="skip for Python 3.14+")
 def test_pickle_format(cookies_to_send: SimpleCookie) -> None:
     """Test if cookiejar pickle format breaks.
 

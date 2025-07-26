@@ -29,7 +29,6 @@ from typing import (
 from unittest import mock
 
 import pytest
-import trustme
 from multidict import MultiDict
 from pytest_mock import MockerFixture
 from yarl import URL
@@ -3259,7 +3258,7 @@ async def test_creds_in_auth_and_redirect_url(
 
 @pytest.fixture
 def create_server_for_url_and_handler(
-    aiohttp_server: AiohttpServer, tls_certificate_authority: trustme.CA
+    aiohttp_server: AiohttpServer, tls_certificate_authority: "trustme.CA"
 ) -> Callable[[URL, Handler], Awaitable[TestServer]]:
     def create(url: URL, srv: Handler) -> Awaitable[TestServer]:
         app = web.Application()
