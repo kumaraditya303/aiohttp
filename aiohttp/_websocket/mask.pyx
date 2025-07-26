@@ -1,3 +1,5 @@
+#cython: language_level=3, freethreading_compatible=True
+
 from cpython cimport PyBytes_AsString
 
 
