@@ -19,7 +19,7 @@ popd
 # Generate Cython extension modules
 make cythonize
 
-python -m pip install -e.
+python -m pip install -e. -v
 
 # Test dependencies
 python -m pip install pytest-cov pytest-mock pytest-codspeed freezegun proxy-py gunicorn
