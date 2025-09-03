@@ -137,7 +137,7 @@ pip-tools==7.5.0
     # via -r requirements/dev.in
 pkgconfig==1.5.5
     # via -r requirements/test.in
-platformdirs==4.3.8
+platformdirs==4.4.0
     # via virtualenv
 pluggy==1.6.0
     # via
@@ -263,7 +263,7 @@ trustme==1.2.1 ; platform_machine != "i686"
     # via
     #   -r requirements/lint.in
     #   -r requirements/test.in
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   aiosignal
     #   exceptiongroup
