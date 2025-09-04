@@ -138,7 +138,7 @@ jobs:
     needs: gen_llhttp
     strategy:
       matrix:
-        pyver: [3.9, '3.10', '3.11', '3.12', '3.13']
+        pyver: [3.9, '3.10', '3.11', '3.12', '3.13', '3.14', '3.14t']
         no-extensions: ['', 'Y']
         os: [ubuntu, macos, windows]
         experimental: [false]
@@ -152,10 +152,6 @@ jobs:
             no-extensions: 'Y'
             os: ubuntu
             experimental: false
-          - os: ubuntu
-            pyver: "3.14"
-            experimental: true
-            no-extensions: 'Y'
       fail-fast: true
     runs-on: ${{ matrix.os }}-latest
     continue-on-error: ${{ matrix.experimental }}
@@ -186,8 +182,13 @@ jobs:
       run: |
         python -m pip install -U pip wheel setuptools build twine
     - name: Install dependencies
+      if: ${{ !endsWith(matrix.pyver, 't') }}
       run: |
         python -m pip install -r requirements/test.in -c requirements/test.txt
+    - name: Install dependencies
+      if: ${{ endsWith(matrix.pyver, 't') }}
+      run: |
+        python -m pip install -r requirements/test-ft.in -c requirements/test-ft.txt
     - name: Restore llhttp generated files
       if: ${{ matrix.no-extensions == '' }}
       uses: actions/download-artifact@v5
