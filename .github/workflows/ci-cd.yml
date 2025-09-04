@@ -23,6 +23,7 @@ env:
   FORCE_COLOR: 1  # Request colored output from CLI tools supporting it
   MYPY_FORCE_COLOR: 1
   PY_COLORS: 1
+  PYTHON_GIL: 0
 
 permissions: {}
 jobs:
@@ -133,8 +134,6 @@ jobs:
   test:
     permissions:
       contents: read # to fetch code (actions/checkout)
-    env:
-      PYTHON_GIL: 0
     name: Test
     needs: gen_llhttp
     strategy:
