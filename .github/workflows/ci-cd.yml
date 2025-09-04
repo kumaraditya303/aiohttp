@@ -133,7 +133,8 @@ jobs:
   test:
     permissions:
       contents: read # to fetch code (actions/checkout)
-
+    env:
+      PYTHON_GIL: 0
     name: Test
     needs: gen_llhttp
     strategy:
