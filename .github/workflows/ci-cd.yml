@@ -23,7 +23,6 @@ env:
   FORCE_COLOR: 1  # Request colored output from CLI tools supporting it
   MYPY_FORCE_COLOR: 1
   PY_COLORS: 1
-  PYTHON_GIL: 0
 
 permissions: {}
 jobs:
