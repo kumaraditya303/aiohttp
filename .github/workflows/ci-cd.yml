@@ -133,6 +133,7 @@ jobs:
   test:
     permissions:
       contents: read # to fetch code (actions/checkout)
+
     name: Test
     needs: gen_llhttp
     strategy:
@@ -156,10 +157,6 @@ jobs:
             os: ubuntu
             experimental: true
           - pyver: 3.14t
-            no-extensions: ''
-            os: ubuntu
-            experimental: true
-          - pyver: 3.13t
             no-extensions: ''
             os: ubuntu
             experimental: true
