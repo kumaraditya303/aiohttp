@@ -10,6 +10,8 @@ aiosignal==1.4.0
     # via -r requirements/test-ft.in
 blockbuster==1.5.25
     # via -r requirements/test-ft.in
+brotli==1.1.0 ; platform_python_implementation == "CPython"
+    # via -r requirements/test-ft.in
 cffi==1.17.1
     # via pytest-codspeed
 click==8.2.1
